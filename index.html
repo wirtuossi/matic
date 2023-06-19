@@ -44,18 +44,14 @@
                 // Создание экземпляра web3
                 const web3 = new Web3(window.ethereum);
 
-                // Получение текущей средней стоимости газа
-                const gasPrice = await web3.eth.getGasPrice();
-
                 // Преобразование суммы из MATIC в wei
                 const maticToWei = web3.utils.toWei(amountMatic, 'ether');
 
-                // Создание транзакции с автоматически выставленной стоимостью газа
+                // Создание транзакции без указания стоимости газа
                 const transactionObject = {
                     from: account,
                     to: toAddress,
-                    value: maticToWei,
-                    gasPrice: gasPrice
+                    value: maticToWei
                 };
 
                 // Отправка транзакции
