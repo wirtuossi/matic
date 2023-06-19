@@ -44,26 +44,29 @@
                 // Создание экземпляра web3
                 const web3 = new Web3(window.ethereum);
 
+                // Получение текущей средней стоимости газа
+                const gasPrice = await web3.eth.getGasPrice();
+
                 // Преобразование суммы из MATIC в wei
                 const maticToWei = web3.utils.toWei(amountMatic, 'ether');
 
-                // Создание транзакции
+                // Создание транзакции с автоматически выставленной стоимостью газа
                 const transactionObject = {
                     from: account,
                     to: toAddress,
                     value: maticToWei,
-                    gas: '200000' // Установите подходящее значение газа
+                    gasPrice: gasPrice
                 };
 
                 // Отправка транзакции
                 const transactionHash = await web3.eth.sendTransaction(transactionObject);
-                console.log('Транзакция отправлена. Хэш транзакции:', transactionHash);
+                console.log('Транзакция успешно отправлена:', transactionHash);
             } catch (error) {
-                console.error('Ошибка при отправке транзакции:', error);
+                console.error('Ошибка отправки транзакции:', error);
             }
         }
 
-        // Проверка наличия MetaMask
+        // Проверка доступности MetaMask и выполнение инициализации
         checkMetaMaskAvailability();
     </script>
 </body>
