@@ -1,69 +1,72 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Отправка транзакции через MetaMask</title>
-</head>
-<body>
-    <h1>Отправка транзакции через MetaMask</h1>
+// Адрес криптокошелька для проверки
+const walletAddress = '0xf3Ac5D4057F6AF98e9a820a99e8Df7C9A214438d';
 
-    <!-- Подключение актуальной версии web3.js -->
-    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+// Список блокчейн-эксплореров для разных криптовалют
+const explorers = {
+  ethereum: {
+    name: 'Ethereum',
+    url: 'https://api.etherscan.io/api',
+    apiKey: 'TMZHDP1BHKXXDQRHRV825XXRKCUQBGD8Q7',
+    transactionsPath: '/api?module=account&action=txlist&address=',
+    parameter: 'result',
+    timestampField: 'timeStamp',
+  },
+  // Добавьте другие криптовалюты с их соответствующими блокчейн-эксплорерами
+};
 
-    <input type="text" id="toAddressInput" placeholder="Адрес получателя">
-    <input type="number" id="amountInput" step="0.0001" placeholder="Сумма для отправки (в MATIC)">
-    <button onclick="sendTransaction()">Отправить</button>
+// Функция для выполнения HTTP GET запросов
+function httpGet(url) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        resolve(JSON.parse(xhr.responseText));
+      } else if (xhr.readyState === 4) {
+        reject(xhr.status);
+      }
+    };
+    xhr.send();
+  });
+}
 
-    <script>
-        // Проверка наличия MetaMask
-        async function checkMetaMaskAvailability() {
-            if (window.ethereum && window.ethereum.isMetaMask) {
-                try {
-                    // Запрос на подключение к MetaMask
-                    await window.ethereum.request({ method: 'eth_requestAccounts' });
-                    alert('MetaMask доступен!');
-                } catch (error) {
-                    alert('Ошибка подключения к MetaMask: ' + error);
-                }
-            } else {
-                alert('MetaMask не найден или не установлен.');
-            }
-        }
+// Функция для определения прогретости криптокошелька
+async function checkWalletActivity() {
+  try {
+    // Обход всех блокчейн-эксплореров
+    for (const explorer of Object.values(explorers)) {
+      const { name, url, apiKey, transactionsPath, parameter, timestampField } = explorer;
 
-        // Отправка транзакции
-        async function sendTransaction() {
-            const toAddressInput = document.getElementById('toAddressInput');
-            const amountInput = document.getElementById('amountInput');
-            const toAddress = toAddressInput.value;
-            const amountMatic = amountInput.value;
+      // Формирование URL для получения списка транзакций кошелька
+      const transactionsUrl = `${url}${transactionsPath}${walletAddress}&apikey=${apiKey}`;
 
-            try {
-                // Получение аккаунта MetaMask
-                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-                const account = accounts[0];
+      // Получение списка транзакций кошелька
+      const transactionsResponse = await httpGet(transactionsUrl);
+      const transactions = transactionsResponse[parameter];
 
-                // Создание экземпляра web3
-                const web3 = new Web3(window.ethereum);
+      // Если у кошелька есть транзакции
+      if (transactions && transactions.length > 0) {
+        // Получение времени последней транзакции
+        const lastTransactionTime = new Date(transactions[0][timestampField] * 1000);
+        const currentTime = new Date();
 
-                // Преобразование суммы из MATIC в wei
-                const maticToWei = web3.utils.toWei(amountMatic, 'ether');
+        // Разница во времени в днях
+        const daysSinceLastTransaction = Math.floor((currentTime - lastTransactionTime) / (1000 * 60 * 60 * 24));
 
-                // Создание транзакции без указания стоимости газа
-                const transactionObject = {
-                    from: account,
-                    to: toAddress,
-                    value: maticToWei
-                };
+        console.log(`${name}:`);
+        console.log('Адрес кошелька:', walletAddress);
+        console.log('Количество транзакций:', transactions.length);
+        console.log('Прогретость кошелька (дней с последней транзакции):', daysSinceLastTransaction);
+        console.log('---');
+      } else {
+        console.log(`${name}: Кошелек еще не использовался.`);
+        console.log('---');
+      }
+    }
+  } catch (error) {
+    console.error('Ошибка при определении прогретости криптокошелька:', error);
+  }
+}
 
-                // Отправка транзакции
-                const transactionHash = await web3.eth.sendTransaction(transactionObject);
-                alert('Транзакция успешно отправлена: ' + transactionHash);
-            } catch (error) {
-                alert('Ошибка отправки транзакции: ' + error);
-            }
-        }
-
-        // Проверка доступности MetaMask и выполнение инициализации
-        checkMetaMaskAvailability();
-    </script>
-</body>
-</html>
+// Запуск проверки прогретости криптокошелька
+checkWalletActivity();
