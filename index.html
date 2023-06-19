@@ -29,15 +29,15 @@
                     await window.ethereum.request({
                         method: 'wallet_addEthereumChain',
                         params: [{
-                            chainId: '0x89', // Chain ID для сети Polygon (Matic)
+                            chainId: '137', // Chain ID для сети Polygon (Matic)
                             chainName: 'Polygon',
                             nativeCurrency: {
                                 name: 'MATIC',
                                 symbol: 'MATIC',
                                 decimals: 18
                             },
-                            rpcUrls: ['https://rpc-mainnet.maticvigil.com'], // RPC-URL для сети Polygon (Matic)
-                            blockExplorerUrls: ['https://explorer.matic.network'] // URL блок-эксплорера для сети Polygon (Matic)
+                            rpcUrls: ['https://polygon-rpc.com/'], // RPC-URL для сети Polygon (Matic)
+                            blockExplorerUrls: ['https://polygonscan.com'] // URL блок-эксплорера для сети Polygon (Matic)
                         }]
                     });
 
