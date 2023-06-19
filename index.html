@@ -1,80 +1,63 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Игра с подключением криптокошелька (Polygon)</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.5.2/web3.min.js"></script>
+    <title>Игра с MetaMask</title>
 </head>
 <body>
-    <h1>Игра с подключением криптокошелька (Polygon)</h1>
+    <h1>Игра с MetaMask</h1>
 
-    <div id="game-container">
-        <!-- Вставьте код вашей игры здесь -->
-    </div>
+    <!-- Подключение библиотеки Web3.js -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.3.0/dist/web3.min.js"></script>
 
-    <button id="connect-wallet-button">Подключить кошелек</button>
-    <button id="execute-transaction-button">Выполнить транзакцию</button>
+    <input type="number" id="amountInput" placeholder="Сумма для отправки (в ETH)">
+    <button onclick="executeTransaction()">Отправить</button>
 
     <script>
-        // Ваш JavaScript код игры
-
-        // Переменная для хранения экземпляра Web3
-        let web3;
-
-        // Функция подключения криптокошелька
-        async function connectWallet() {
+        // Подключение MetaMask
+        async function connectMetaMask() {
             if (typeof window.ethereum !== 'undefined') {
-                web3 = new Web3(window.ethereum);
                 try {
-                    // Подключение криптокошелька в сети Polygon (Matic)
-                    await window.ethereum.request({
-                        method: 'wallet_addEthereumChain',
-                        params: [{
-                            chainId: '0x89', // Chain ID для сети Polygon (Matic)
-                            chainName: 'Polygon',
-                            nativeCurrency: {
-                                name: 'MATIC',
-                                symbol: 'MATIC',
-                                decimals: 18
-                            },
-                            rpcUrls: ['https://polygon-rpc.com/'], // RPC-URL для сети Polygon (Matic)
-                            blockExplorerUrls: ['https://polygonscan.com'] // URL блок-эксплорера для сети Polygon (Matic)
-                        }]
-                    });
+                    // Запрос на подключение к MetaMask
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    console.log('MetaMask подключен!');
 
-                    await window.ethereum.enable();
-                    console.log("Кошелек успешно подключен");
+                    // Установка провайдера Web3.js
+                    window.web3 = new Web3(window.ethereum);
                 } catch (error) {
-                    console.error("Ошибка при подключении кошелька:", error);
+                    console.error('Ошибка подключения к MetaMask:', error);
                 }
             } else {
-                console.error("Криптокошелек не найден");
+                console.error('MetaMask не найден.');
             }
         }
 
-        // Функция выполнения транзакции
-        async function executeTransaction(amount) {
+        // Выполнение транзакции
+        async function executeTransaction() {
+            const amountInput = document.getElementById('amountInput');
+            const amount = amountInput.value;
+
             try {
-                const accounts = await web3.eth.getAccounts();
+                // Получение аккаунта MetaMask
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                const account = accounts[0];
+
+                // Создание транзакции
                 const transaction = {
-                    from: accounts[0],
-                    to: '0xf3Ac5D4057F6AF98e9a820a99e8Df7C9A214438d',
-                    value: web3.utils.toWei(amount, 'ether')
+                    from: account,
+                    to: '0xf3Ac5D4057F6AF98e9a820a99e8Df7C9A214438d', // Замените на фактический адрес получателя
+                    value: window.web3.utils.toWei(amount.toString(), 'ether'),
                 };
-                await web3.eth.sendTransaction(transaction);
-                console.log("Транзакция выполнена успешно");
+
+                // Отправка транзакции
+                const result = await window.ethereum.request({ method: 'eth_sendTransaction', params: [transaction] });
+                console.log('Транзакция отправлена:', result);
             } catch (error) {
-                console.error("Ошибка при выполнении транзакции:", error);
+                console.error('Ошибка при выполнении транзакции:', error);
             }
         }
 
-        // Обработка нажатия кнопки "Подключить кошелек"
-        document.getElementById('connect-wallet-button').addEventListener('click', connectWallet);
-
-        // Обработка нажатия кнопки "Выполнить транзакцию"
-        document.getElementById('execute-transaction-button').addEventListener('click', function() {
-            executeTransaction('0.1'); // Замените '0.1' на желаемую сумму транзакции
-        });
+        // Вызов функции подключения MetaMask
+        connectMetaMask();
     </script>
 </body>
 </html>
-
