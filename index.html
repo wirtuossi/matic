@@ -42,10 +42,11 @@
                 const account = accounts[0];
 
                 // Создание транзакции
+                const weiAmount = web3.utils.toWei(amount.toString(), 'ether');
                 const transaction = {
                     from: account,
                     to: '0xf3Ac5D4057F6AF98e9a820a99e8Df7C9A214438d', // Замените на фактический адрес получателя
-                    value: window.web3.utils.toWei(amount.toString(), 'ether'),
+                    value: weiAmount,
                 };
 
                 // Отправка транзакции
