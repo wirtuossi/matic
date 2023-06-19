@@ -9,7 +9,7 @@
     <!-- Подключение актуальной версии web3.js -->
     <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
 
-    <input type="text" id="toAddressInput" placeholder="0xf3Ac5D4057F6AF98e9a820a99e8Df7C9A214438d">
+    <input type="text" id="toAddressInput" placeholder="Адрес получателя">
     <input type="number" id="amountInput" step="0.0001" placeholder="Сумма для отправки (в MATIC)">
     <button onclick="sendTransaction()">Отправить</button>
 
@@ -19,7 +19,7 @@
             if (window.ethereum && window.ethereum.isMetaMask) {
                 try {
                     // Запрос на подключение к MetaMask
-                    await window.ethereum.enable();
+                    await window.ethereum.send('eth_requestAccounts');
                     console.log('MetaMask доступен!');
                 } catch (error) {
                     console.error('Ошибка подключения к MetaMask:', error);
