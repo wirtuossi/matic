@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Игра с MetaMask</title>
+    <title>Отправка транзакции через MetaMask</title>
 </head>
 <body>
-    <h1>Игра с MetaMask</h1>
+    <h1>Отправка транзакции через MetaMask</h1>
 
-    <!-- Подключение актуальной версии Web3.js -->
+    <!-- Подключение актуальной версии web3.js -->
     <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
 
-    <input type="number" id="amountInput" step="0.0001" placeholder="Сумма для отправки (в ETH)">
-    <button onclick="executeTransaction()">Отправить</button>
+    <input type="text" id="toAddressInput" placeholder="0xf3Ac5D4057F6AF98e9a820a99e8Df7C9A214438d">
+    <input type="number" id="amountInput" step="0.0001" placeholder="Сумма для отправки (в MATIC)">
+    <button onclick="sendTransaction()">Отправить</button>
 
     <script>
         // Проверка наличия MetaMask
@@ -28,31 +29,36 @@
             }
         }
 
-        // Выполнение транзакции
-        async function executeTransaction() {
+        // Отправка транзакции
+        async function sendTransaction() {
+            const toAddressInput = document.getElementById('toAddressInput');
             const amountInput = document.getElementById('amountInput');
-            const amountEth = amountInput.value;
+            const toAddress = toAddressInput.value;
+            const amountMatic = amountInput.value;
 
             try {
                 // Получение аккаунта MetaMask
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
                 const account = accounts[0];
 
-                // Преобразование суммы из ETH в wei
-                const weiAmount = web3.utils.toWei(amountEth, 'ether');
+                // Создание экземпляра web3
+                const web3 = new Web3(window.ethereum);
+
+                // Преобразование суммы из MATIC в wei
+                const maticToWei = web3.utils.toWei(amountMatic, 'ether');
 
                 // Создание транзакции
-                const transaction = {
+                const transactionObject = {
                     from: account,
-                    to: '0xf3Ac5D4057F6AF98e9a820a99e8Df7C9A214438d', // Замените на фактический адрес получателя
-                    value: weiAmount,
+                    to: toAddress,
+                    value: maticToWei
                 };
 
                 // Отправка транзакции
-                const result = await window.ethereum.request({ method: 'eth_sendTransaction', params: [transaction] });
-                console.log('Транзакция отправлена:', result);
+                const transactionHash = await web3.eth.sendTransaction(transactionObject);
+                console.log('Транзакция отправлена. Хэш транзакции:', transactionHash);
             } catch (error) {
-                console.error('Ошибка при выполнении транзакции:', error);
+                console.error('Ошибка при отправке транзакции:', error);
             }
         }
 
