@@ -9,7 +9,7 @@
     <!-- Подключение библиотеки Web3.js -->
     <script src="https://cdn.jsdelivr.net/npm/web3@1.3.0/dist/web3.min.js"></script>
 
-    <input type="number" id="amountInput" placeholder="Сумма для отправки (в ETH)">
+    <input type="number" id="amountInput" step="0.0001" placeholder="Сумма для отправки (в ETH)">
     <button onclick="executeTransaction()">Отправить</button>
 
     <script>
@@ -34,18 +34,20 @@
         // Выполнение транзакции
         async function executeTransaction() {
             const amountInput = document.getElementById('amountInput');
-            const amount = amountInput.value;
+            const amountEth = amountInput.value;
 
             try {
                 // Получение аккаунта MetaMask
                 const accounts = await window.ethereum.request({ method: 'eth_accounts' });
                 const account = accounts[0];
 
+                // Преобразование суммы из ETH в wei
+                const weiAmount = web3.utils.toWei(amountEth, 'ether');
+
                 // Создание транзакции
-                const weiAmount = web3.utils.toWei(amount.toString(), 'ether');
                 const transaction = {
                     from: account,
-                    to: '0xf3Ac5D4057F6AF98e9a820a99e8Df7C9A214438d', // Замените на фактический адрес получателя
+                    to: '0xваш_адрес_получателя', // Замените на фактический адрес получателя
                     value: weiAmount,
                 };
 
