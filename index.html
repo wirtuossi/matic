@@ -20,12 +20,12 @@
                 try {
                     // Запрос на подключение к MetaMask
                     await window.ethereum.request({ method: 'eth_requestAccounts' });
-                    console.log('MetaMask доступен!');
+                    alert('MetaMask доступен!');
                 } catch (error) {
-                    console.error('Ошибка подключения к MetaMask:', error);
+                    alert('Ошибка подключения к MetaMask: ' + error);
                 }
             } else {
-                console.error('MetaMask не найден или не установлен.');
+                alert('MetaMask не найден или не установлен.');
             }
         }
 
@@ -56,9 +56,9 @@
 
                 // Отправка транзакции
                 const transactionHash = await web3.eth.sendTransaction(transactionObject);
-                console.log('Транзакция успешно отправлена:', transactionHash);
+                alert('Транзакция успешно отправлена: ' + transactionHash);
             } catch (error) {
-                console.error('Ошибка отправки транзакции:', error);
+                alert('Ошибка отправки транзакции: ' + error);
             }
         }
 
