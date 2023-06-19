@@ -1,72 +1,65 @@
-// Адрес криптокошелька для проверки
-const walletAddress = '0xf3Ac5D4057F6AF98e9a820a99e8Df7C9A214438d';
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Проверка прогретости кошелька</title>
+</head>
+<body>
+    <h1>Проверка прогретости кошелька</h1>
 
-// Список блокчейн-эксплореров для разных криптовалют
-const explorers = {
-  ethereum: {
-    name: 'Ethereum',
-    url: 'https://api.etherscan.io/api',
-    apiKey: 'TMZHDP1BHKXXDQRHRV825XXRKCUQBGD8Q7',
-    transactionsPath: '/api?module=account&action=txlist&address=',
-    parameter: 'result',
-    timestampField: 'timeStamp',
-  },
-  // Добавьте другие криптовалюты с их соответствующими блокчейн-эксплорерами
-};
+    <input type="text" id="wallet-address" placeholder="Адрес кошелька">
+    <button onclick="checkWallet()">Проверить</button>
 
-// Функция для выполнения HTTP GET запросов
-function httpGet(url) {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.onreadystatechange = function () {
-      if (xhr.readyState === 4 && xhr.status === 200) {
-        resolve(JSON.parse(xhr.responseText));
-      } else if (xhr.readyState === 4) {
-        reject(xhr.status);
-      }
-    };
-    xhr.send();
-  });
-}
+    <h2>Результаты</h2>
+    <ul id="result-container"></ul>
 
-// Функция для определения прогретости криптокошелька
-async function checkWalletActivity() {
-  try {
-    // Обход всех блокчейн-эксплореров
-    for (const explorer of Object.values(explorers)) {
-      const { name, url, apiKey, transactionsPath, parameter, timestampField } = explorer;
+    <script>
+        async function checkWallet() {
+            const walletAddress = document.getElementById("wallet-address").value;
+            const resultContainer = document.getElementById("result-container");
+            resultContainer.innerHTML = ""; // Очистка результатов перед новой проверкой
 
-      // Формирование URL для получения списка транзакций кошелька
-      const transactionsUrl = `${url}${transactionsPath}${walletAddress}&apikey=${apiKey}`;
+            const networks = [
+                { name: "Avalanche", chainId: "43114", apiEndpoint: "https://api.avax.network/ext/bc/C/rpc" },
+                { name: "Binance Smart Chain", chainId: "56", apiEndpoint: "https://bsc-dataseed.binance.org/" },
+                { name: "Ethereum", chainId: "1", apiEndpoint: "https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID" },
+                { name: "Arbitrum", chainId: "42161", apiEndpoint: "https://arb1.arbitrum.io/rpc" },
+                { name: "Optimism", chainId: "10", apiEndpoint: "https://mainnet.optimism.io/" },
+                { name: "Polygon", chainId: "137", apiEndpoint: "https://rpc-mainnet.maticvigil.com/" },
+                { name: "Fantom", chainId: "250", apiEndpoint: "https://rpcapi.fantom.network" }
+            ];
 
-      // Получение списка транзакций кошелька
-      const transactionsResponse = await httpGet(transactionsUrl);
-      const transactions = transactionsResponse[parameter];
+            for (const network of networks) {
+                const result = await checkNetworkBalance(walletAddress, network.apiEndpoint);
+                const listItem = document.createElement("li");
+                listItem.innerText = `${network.name}: ${result ? "Прогрет" : "Не прогрет"}`;
+                resultContainer.appendChild(listItem);
+            }
+        }
 
-      // Если у кошелька есть транзакции
-      if (transactions && transactions.length > 0) {
-        // Получение времени последней транзакции
-        const lastTransactionTime = new Date(transactions[0][timestampField] * 1000);
-        const currentTime = new Date();
+        async function checkNetworkBalance(walletAddress, apiEndpoint) {
+            try {
+                const response = await fetch(apiEndpoint, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        jsonrpc: "2.0",
+                        method: "eth_getBalance",
+                        params: [walletAddress, "latest"],
+                        id: 1
+                    })
+                });
 
-        // Разница во времени в днях
-        const daysSinceLastTransaction = Math.floor((currentTime - lastTransactionTime) / (1000 * 60 * 60 * 24));
+                const data = await response.json();
+                const balance = parseInt(data.result);
 
-        console.log(`${name}:`);
-        console.log('Адрес кошелька:', walletAddress);
-        console.log('Количество транзакций:', transactions.length);
-        console.log('Прогретость кошелька (дней с последней транзакции):', daysSinceLastTransaction);
-        console.log('---');
-      } else {
-        console.log(`${name}: Кошелек еще не использовался.`);
-        console.log('---');
-      }
-    }
-  } catch (error) {
-    console.error('Ошибка при определении прогретости криптокошелька:', error);
-  }
-}
-
-// Запуск проверки прогретости криптокошелька
-checkWalletActivity();
+                return balance > 0;
+            } catch (error) {
+                console.error("Ошибка при проверке прогретости кошелька:", error);
+                return false;
+            }
+        }
+    </script>
+</body>
+</html>
