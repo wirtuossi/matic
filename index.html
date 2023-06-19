@@ -19,7 +19,7 @@
             if (window.ethereum && window.ethereum.isMetaMask) {
                 try {
                     // Запрос на подключение к MetaMask
-                    await window.ethereum.send('eth_requestAccounts');
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
                     console.log('MetaMask доступен!');
                 } catch (error) {
                     console.error('Ошибка подключения к MetaMask:', error);
@@ -51,7 +51,8 @@
                 const transactionObject = {
                     from: account,
                     to: toAddress,
-                    value: maticToWei
+                    value: maticToWei,
+                    gas: '200000' // Установите подходящее значение газа
                 };
 
                 // Отправка транзакции
